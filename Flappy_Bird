@@ -1,0 +1,135 @@
+import graphics
+import random 
+
+class Flappy:
+    def __init__(self, window):
+        self.flappyBird = graphics.Image(graphics.Point(50,100), "flappybird.gif")
+        self.flappyBird.draw(window)
+    def move(self):
+        self.flappyBird.move(0,5)
+    def fly(self):
+        self.flappyBird.move(0,-50)
+    def getY(self):
+        return self.flappyBird.getAnchor().getY()
+
+class bottomPipe:
+    def __init__(self,window, x):
+        self.x = x
+        self.y = random.randint(100,280)
+        self.bottomTube = graphics.Rectangle(graphics.Point(self.x, 600 - self.y), graphics.Point(x+50, 600))
+        self.bottomTube.setFill('green')
+        self.bottomTube.draw(window)
+    def move(self):
+        self.bottomTube.move(-5,0)
+    def intersect(self,other):
+        return self.bottomTube.intersects(other.flappyBird)
+class topPipe:
+    def __init__(self,window,x):
+        self.x = x
+        self.y = random.randint(100, 250)
+        self.topTube = graphics.Rectangle(graphics.Point(self.x, 0), graphics.Point(x+50, self.y))
+        self.topTube.setFill('green')
+        self.topTube.draw(window)
+    def move(self):
+        self.topTube.move(-5,0)
+    def intersect(self,other):
+        return self.topTube.intersects(other.flappyBird)
+
+
+
+
+
+class Game:
+  # The constructor sets several attributes and handles some other initialization
+  def __init__(self):
+      
+    self.startScreen = graphics.Image(graphics.Point(200,310), "STARTSCREEN2.gif")
+    # A GraphWin (window) from the graphics module is created with the title
+    # Dodger and dimensions of 500x500px. 
+    self.window = graphics.GraphWin('Dodger', 600, 600, autoflush=False)
+    
+    background = graphics.Image(graphics.Point(200,310), "background3.gif")
+    background.draw(self.window)
+ 
+    self.flappy = Flappy(self.window)
+    # Set up a few attributes - start the score at 0, and create a Player
+    self.score = 0
+    
+    self.label = graphics.Text(graphics.Point(250, 20), '')
+    # Make sure to draw the Text object, otherwise it won't show up!
+    self.label.draw(self.window)
+
+      
+    # Add a Text object (from the graphics module) to the window. It is
+    # located at a Point near the top center of the window, and initially contains
+    # an empty string
+    self.label = graphics.Text(graphics.Point(250, 20), '')
+    # Make sure to draw the Text object, otherwise it won't show up!
+    self.label.draw(self.window)
+   
+    self.listoftubes = []
+    Tubestart = 200 
+    for i in range(1000):
+        self.listoftubes.append(topPipe(self.window, Tubestart))
+        Tubestart = Tubestart + 120
+    
+    
+    
+    self.bottomlistoftubes = []
+    startTube = 250
+    for i in range(1000):
+        self.bottomlistoftubes.append(bottomPipe(self.window, startTube))
+        startTube = startTube + 120
+    self.startScreen = graphics.Image(graphics.Point(290,340), "STARTSCREEN3.gif")
+    self.startScreen.draw(self.window)
+    self.window.setMouseHandler(self.clicked)
+    self.window.mainloop()
+    
+  def clicked(self, event):
+    self.startScreen.undraw()
+    self.start()
+    
+  # This method starts the game running by kicking off the run loop - the code that
+  # runs many times every second and moves/updates all the objects in the game
+  def start(self):
+    self.window.after(30, self.run)
+  
+  # This method is the runloop - the code that drives the game, handles input
+  # (mouse and keyboard events), calculates the score, and checks if the game is
+  # over. 
+  def run(self):
+    self.flappy.move()
+    
+    if self.window.checkKey() == "Up":
+        self.flappy.fly()
+    else:
+        self.flappy.move()
+    
+    if self.flappy.getY() >= 600:
+        game.update(30)
+        return
+    if self.flappy.getY() <= 0:
+        game.update(30)
+        return
+        
+    for i in self.listoftubes:
+        if i.intersect(self.flappy):
+            graphics.update(30)
+            self.score = 0
+            return
+        i.move()
+    for i in self.bottomlistoftubes:
+        if i.intersect(self.flappy):
+            graphics.update(30)
+            self.score = 0
+            return
+        i.move()
+    self.score = self.score + 1
+    self.label.setText('Score: {}'.format(self.score))
+    # Now that we've moved around all the enemies/player, render the scene
+    # so that they appear in their new positions in the window
+    graphics.update(30)
+    # Make sure that this function (run) gets called again in 30 microseconds
+    self.window.after(30, self.run)
+game = Game()
+#game.start()
